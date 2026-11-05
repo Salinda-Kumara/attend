@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env
+.env*.local
+# attendee list contains personal data (names + NIC numbers) - keep it out of git
+*.xlsx
+*.xls
+# duplicate of public/bg.jpg
+Backdrop*.jpg
+*.log
