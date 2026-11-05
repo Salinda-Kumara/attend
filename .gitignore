@@ -8,3 +8,4 @@ node_modules/
 # duplicate of public/bg.jpg
 Backdrop*.jpg
 *.log
+data/

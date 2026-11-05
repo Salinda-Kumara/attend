@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env
+.env*.local
+*.xlsx
+*.xls
+Backdrop*.jpg
+*.log
+Dockerfile
+docker-compose.yml
