@@ -45,7 +45,13 @@ export default function Home() {
     if (r.status === 401) { setAuth(false); return null; }
     return r.json();
   }).then((j) => j && setStats(j)).catch(() => {}), []);
-  useEffect(() => { if (auth) loadStats(); }, [auth, loadStats]);
+  // keep the present count fresh (other devices may be marking too)
+  useEffect(() => {
+    if (!auth) return;
+    loadStats();
+    const t = setInterval(() => { if (!document.hidden) loadStats(); }, 3000);
+    return () => clearInterval(t);
+  }, [auth, loadStats]);
 
   const login = async (e) => {
     e.preventDefault();

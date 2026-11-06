@@ -48,7 +48,7 @@ Alternatively use the import function on the admin page.
 ## 6. Public HTTPS with Cloudflare Tunnel (optional)
 1. Add your domain to Cloudflare.
 2. Zero Trust → Networks → Tunnels → Create a tunnel (Cloudflared). Copy the token from the Docker install command (`--token ...`).
-3. Add a public hostname: e.g. `attendance.yourdomain.com`, service type `HTTP`, URL `app:3000` (use the compose service name, not `localhost`).
+3. Add a public hostname: e.g. `attendance.yourdomain.com`, Service URL `http://app:3000` (include the `http://`; use the compose service name, not `localhost`).
 4. Put the token in `.env`:
    ```
    CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi...
