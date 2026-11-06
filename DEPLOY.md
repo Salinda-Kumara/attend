@@ -21,6 +21,7 @@ Edit `.env`:
 | Variable | Purpose |
 |---|---|
 | `ADMIN_USER` / `ADMIN_PASS` | Admin login (`ADMIN_PASS` required) |
+| `STAFF_USER` / `STAFF_PASS` | Login for the marking page. If left blank, the admin login is used. The admin login always works on both pages |
 | `SESSION_SECRET` | Long random string, e.g. `openssl rand -hex 32` (required) |
 | `DB_PASSWORD` | Postgres password. Set before first start; changing it later does not update an existing database volume |
 | `APP_PORT` | Host port for the app (default 3000) |

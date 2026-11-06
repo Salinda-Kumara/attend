@@ -1,3 +1,4 @@
+import { isStaff, unauthorized } from '@/lib/auth';
 import { pool, ensureSchema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -14,13 +15,15 @@ async function getColumns() {
 }
 
 // Field list for the "add person" form
-export async function GET() {
+export async function GET(req) {
+  if (!isStaff(req)) return unauthorized();
   await ensureSchema();
   return Response.json(await getColumns());
 }
 
 // Add someone who is not in the list (optionally mark them present right away)
 export async function POST(req) {
+  if (!isStaff(req)) return unauthorized();
   await ensureSchema();
   const body = await req.json().catch(() => ({}));
   const { columns, nameCol } = await getColumns();

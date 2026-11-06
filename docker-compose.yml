@@ -25,6 +25,8 @@ services:
       DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-password}@db:5432/attendance
       ADMIN_USER: ${ADMIN_USER:-admin}
       ADMIN_PASS: ${ADMIN_PASS:?set ADMIN_PASS in .env}
+      STAFF_USER: ${STAFF_USER:-}
+      STAFF_PASS: ${STAFF_PASS:-}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
     volumes:
       - ./data:/data:ro   # drop the Excel list here for importing

@@ -29,17 +29,47 @@ export default function Home() {
   const [mark, setMark] = useState(true);
   const [addBusy, setAddBusy] = useState(false);
   const [addErr, setAddErr] = useState('');
+  const [auth, setAuth] = useState(null);
+  const [u, setU] = useState('');
+  const [pw, setPw] = useState('');
+  const [loginErr, setLoginErr] = useState('');
+  const [loginBusy, setLoginBusy] = useState(false);
   const seq = useRef(0);
   const input = useRef(null);
 
-  const loadStats = useCallback(() => fetch('/api/stats').then((r) => r.json()).then(setStats).catch(() => {}), []);
-  useEffect(() => { loadStats(); }, [loadStats]);
+  useEffect(() => {
+    fetch('/api/session').then((r) => r.json()).then((j) => setAuth(!!j.ok)).catch(() => setAuth(false));
+  }, []);
+
+  const loadStats = useCallback(() => fetch('/api/stats').then((r) => {
+    if (r.status === 401) { setAuth(false); return null; }
+    return r.json();
+  }).then((j) => j && setStats(j)).catch(() => {}), []);
+  useEffect(() => { if (auth) loadStats(); }, [auth, loadStats]);
+
+  const login = async (e) => {
+    e.preventDefault();
+    setLoginBusy(true); setLoginErr('');
+    const res = await fetch('/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: pw }),
+    });
+    setLoginBusy(false);
+    if (!res.ok) return setLoginErr('Invalid username or password.');
+    setPw(''); setAuth(true);
+  };
+  const logout = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    setAuth(false); setStats(null); setRows(null); setQ('');
+  };
 
   const search = useCallback(async (text) => {
     const my = ++seq.current;
     if (!text.trim()) { setRows(null); setLoading(false); return; }
     setLoading(true);
-    const r = await (await fetch('/api/search?q=' + encodeURIComponent(text))).json();
+    const res = await fetch('/api/search?q=' + encodeURIComponent(text));
+    if (res.status === 401) { setAuth(false); setLoading(false); return; }
+    const r = await res.json();
     if (my === seq.current) { setRows(r); setLoading(false); }
   }, []);
 
@@ -69,6 +99,7 @@ export default function Home() {
     });
     const j = await res.json();
     setBusy(false);
+    if (res.status === 401) { setSelected(null); return setAuth(false); }
     if (res.ok) {
       setDone({ name: j.name, at: j.marked_at });
       setSelected(null);
@@ -82,7 +113,9 @@ export default function Home() {
   };
 
   const openAdd = async () => {
-    const c = await (await fetch('/api/people')).json();
+    const cr = await fetch('/api/people');
+    if (cr.status === 401) return setAuth(false);
+    const c = await cr.json();
     setCols(c);
     setForm(Object.fromEntries(c.columns.map((k) => [k, k === c.nameCol ? nice(q) : ''])));
     setAddErr('');
@@ -98,6 +131,7 @@ export default function Home() {
     });
     const j = await res.json();
     setAddBusy(false);
+    if (res.status === 401) { setAdding(false); return setAuth(false); }
     if (!res.ok) return setAddErr(j.error || 'Could not add this person.');
     setAdding(false); setQ(''); setRows(null); loadStats();
     if (j.marked_at) {
@@ -108,6 +142,33 @@ export default function Home() {
 
   const terms = q.trim().split(/\s+/).filter(Boolean);
   const pct = stats && stats.total ? Math.round((stats.present / stats.total) * 100) : 0;
+
+  if (auth === null) return null;
+
+  if (!auth) {
+    return (
+      <>
+        <div className="hero small" />
+        <main className="shell flat">
+          <form className="glass panel login" onSubmit={login}>
+            <div className="lock">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+            </div>
+            <h1 className="title">Staff <span>Login</span></h1>
+            <p className="sub">Sign in to mark attendance</p>
+            <label className="field">Username
+              <input autoComplete="username" autoFocus value={u} onChange={(e) => setU(e.target.value)} />
+            </label>
+            <label className="field">Password
+              <input type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} />
+            </label>
+            <div className="err">{loginErr}</div>
+            <button className="btn" disabled={loginBusy}>{loginBusy ? 'Signing in…' : 'Sign in'}</button>
+          </form>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -158,6 +219,7 @@ export default function Home() {
             })}
           </div>
         </section>
+        <nav className="nav"><a href="#" onClick={(e) => { e.preventDefault(); logout(); }}>Log out</a></nav>
       </main>
 
       {selected && (

@@ -1,8 +1,10 @@
+import { isStaff, unauthorized } from '@/lib/auth';
 import { pool, ensureSchema, likeTerms } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
+  if (!isStaff(req)) return unauthorized();
   await ensureSchema();
   const params = likeTerms(req.nextUrl.searchParams.get('q'));
   if (!params.length) return Response.json([]);

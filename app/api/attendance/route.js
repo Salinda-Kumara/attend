@@ -1,8 +1,10 @@
+import { isStaff, unauthorized } from '@/lib/auth';
 import { pool, ensureSchema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
+  if (!isStaff(req)) return unauthorized();
   await ensureSchema();
   const body = await req.json().catch(() => ({}));
   const id = parseInt(body.personId, 10);
