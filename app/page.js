@@ -10,7 +10,7 @@ const esc =(s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 function Hl({ text, terms, name }) {
   const t = name ? nice(text) : tidy(text);
   if (!terms.length) return t;
-  const re = new RegExp('(' + terms.map(esc).join('|') + ')', 'gi');
+  const re = new RegExp('(?<![\\p{L}\\p{N}])(' + terms.map(esc).join('|') + ')', 'giu');
   return t.split(re).map((p, i) => (i % 2 ? <mark key={i}>{p}</mark> : p));
 }
 
@@ -79,10 +79,12 @@ export default function Home() {
     if (my === seq.current) { setRows(r); setLoading(false); }
   }, []);
 
+  // Filter live as you type; every word matches from the start of a word in the name.
+  const searchText = q.trim();
   useEffect(() => {
-    const t = setTimeout(() => search(q), 180);
+    const t = setTimeout(() => search(searchText), 120);
     return () => clearTimeout(t);
-  }, [q, search]);
+  }, [searchText, search]);
 
   useEffect(() => {
     const k = (e) => {
@@ -209,14 +211,23 @@ export default function Home() {
             )}
             {rows?.map((r, i) => {
               const serialKey = Object.keys(r.data).find((k) => /serial/i.test(k) && tidy(r.data[k]));
-              const extra = Object.entries(r.data).filter(([k, v]) => v && k !== serialKey && tidy(v) !== tidy(r.name));
+              const isWd = (k) => /wd\s*\/?\s*we/i.test(k);
+              const isDeg = (k) => /degree|programme?/i.test(k);
+              const wdKey = Object.keys(r.data).find((k) => isWd(k) && tidy(r.data[k]));
+              const degKey = Object.keys(r.data).find((k) => isDeg(k) && tidy(r.data[k]));
+              // WD/WE shares the Degree Program chip so both sit on one line
+              const extra = Object.entries(r.data).filter(([k, v]) => v && k !== serialKey && tidy(v) !== tidy(r.name) && !(wdKey && degKey && k === wdKey));
               return (
                 <button key={r.id} className={'person' + (r.marked_at ? ' done' : '')} style={{ animationDelay: i * 30 + 'ms' }} onClick={() => pick(r)}>
                   {serialKey && <div className="serial" title={serialKey}><Hl text={r.data[serialKey]} terms={terms} /></div>}
                   <div className="pinfo">
                     <div className="pname"><Hl text={r.name} terms={terms} name /></div>
                     <div className="chips">
-                      {extra.map(([k, v]) => <span className="chip" key={k}>{k}: <b><Hl text={v} terms={terms} name={/name/i.test(k)} /></b></span>)}
+                      {extra.map(([k, v]) => (
+                        <span className="chip" key={k}>{k}: <b><Hl text={v} terms={terms} name={/name/i.test(k)} /></b>
+                          {wdKey && degKey && k === degKey && <> <i className="sep">•</i> <b><Hl text={r.data[wdKey]} terms={terms} /></b></>}
+                        </span>
+                      ))}
                     </div>
                   </div>
                   {r.marked_at ? <span className="tag ok">✓ Present</span> : <span className="tag go">Tap to mark →</span>}

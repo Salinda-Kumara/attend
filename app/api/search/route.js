@@ -1,14 +1,14 @@
 import { isStaff, unauthorized } from '@/lib/auth';
-import { pool, ensureSchema, likeTerms } from '@/lib/db';
+import { pool, ensureSchema, wordTerms } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   if (!isStaff(req)) return unauthorized();
   await ensureSchema();
-  const params = likeTerms(req.nextUrl.searchParams.get('q'));
+  const params = wordTerms(req.nextUrl.searchParams.get('q'));
   if (!params.length) return Response.json([]);
-  const where = params.map((_, i) => `p.search_text ILIKE $${i + 1}`).join(' AND ');
+  const where = params.map((_, i) => `p.search_text ~* $${i + 1}`).join(' AND ');
   const { rows } = await pool.query(
     `SELECT p.id, p.name, p.data,
             (SELECT marked_at FROM attendance a WHERE a.person_id = p.id AND a.marked_date = CURRENT_DATE) AS marked_at
