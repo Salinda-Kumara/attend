@@ -247,3 +247,6 @@ tr.manual-row { background: rgba(251,191,36,.08); box-shadow: inset 3px 0 0 #fbb
   .person { padding: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Names use Aptos (installed with Microsoft 365 / recent Windows); falls back to the body font elsewhere */
+.pname, .cellname, .nm { font-family: Aptos, 'Aptos Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif; }

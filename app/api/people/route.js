@@ -2,9 +2,13 @@ import { pool, ensureSchema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+const CONTACT = 'Contact Number';
+
 async function getColumns() {
   const { rows } = await pool.query('SELECT data FROM people ORDER BY id LIMIT 1');
   const keys = rows[0] ? Object.keys(rows[0].data) : ['Full Name'];
+  // people added by hand also get a contact number
+  if (!keys.some((k) => /contact|phone|mobile/i.test(k))) keys.push(CONTACT);
   const nameCol = keys.find((k) => /name/i.test(k)) || keys[0];
   return { columns: keys, nameCol };
 }

@@ -37,7 +37,7 @@ docker compose logs -f app
 Open `http://<server-ip>:3000`. Admin page: `/admin`.
 
 ## 5. Import the attendee list
-The Excel file is not in git (it contains names and NIC numbers). Copy it to the server, then:
+The Excel file is not in git (it contains names and personal details). Copy it to the server, then:
 ```bash
 mkdir -p data          # put "20B List.xlsx" inside
 docker compose run --rm app node scripts/import.js "/data/20B List.xlsx"

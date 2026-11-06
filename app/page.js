@@ -163,7 +163,7 @@ export default function Home() {
       {selected && (
         <div className="modal" onClick={() => !busy && setSelected(null)}>
           <div className="glass box" onClick={(e) => e.stopPropagation()}>
-            <h2>{nice(selected.name)}</h2>
+            <h2 className="nm">{nice(selected.name)}</h2>
             <div className="who">Confirm this person is attending</div>
             <div className="details">
               {Object.entries(selected.data).map(([k, v]) => <div className="kv" key={k}><span>{k}</span><b>{val(k, v)}</b></div>)}
@@ -183,7 +183,7 @@ export default function Home() {
             <div className="who">Not in the list? Add them here.</div>
             {cols.columns.map((k) => (
               <label className="field" key={k}>{k}{k === cols.nameCol && ' *'}
-                <input value={form[k] ?? ''} autoFocus={k === cols.nameCol} maxLength={200} autoComplete="off"
+                <input type={/contact|phone|mobile/i.test(k) ? 'tel' : 'text'} inputMode={/contact|phone|mobile/i.test(k) ? 'tel' : undefined} value={form[k] ?? ''} autoFocus={k === cols.nameCol} maxLength={200} autoComplete="off"
                   onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
               </label>
             ))}
@@ -205,7 +205,7 @@ export default function Home() {
           <div className="glass box">
             <svg className="check" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" /><path d="M14 27l8 8 16-17" /></svg>
             <h2>Attendance marked</h2>
-            <div className="who" style={{ marginTop: 8, fontSize: 16, color: '#fff' }}>{nice(done.name)}</div>
+            <div className="who nm" style={{ marginTop: 8, fontSize: 16, color: '#fff' }}>{nice(done.name)}</div>
           </div>
         </div>
       )}
