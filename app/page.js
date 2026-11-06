@@ -219,7 +219,7 @@ export default function Home() {
             })}
           </div>
         </section>
-        <nav className="nav"><a href="#" onClick={(e) => { e.preventDefault(); logout(); }}>Log out</a></nav>
+        <button type="button" className="logout" onClick={logout}>Log out</button>
       </main>
 
       {selected && (
